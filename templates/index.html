@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PokéAPI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #e3350d;
+      --red-dark: #b52a09;
+      --black: #1a1a2e;
+      --surface: #ffffff;
+      --surface-2: #f5f5f7;
+      --border: #e0e0e0;
+      --text: #1a1a2e;
+      --text-muted: #6e6e80;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--surface-2);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ---------- NAV ---------- */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--red);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover { background: var(--surface-2); color: var(--text); }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      background: var(--black);
+      color: #fff;
+      padding: 72px 24px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(227,53,13,0.18);
+      color: #ff6b47;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .hero h1 em { color: var(--red); font-style: normal; }
+    .hero p {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.65);
+      max-width: 520px;
+      margin: 0 auto 32px;
+    }
+    .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-primary { background: var(--red); color: #fff; }
+    .btn-ghost { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+
+    /* ---------- STATS BAR ---------- */
+    .stats-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+    .stats-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .stat { text-align: center; }
+    .stat-val { font-size: 1.6rem; font-weight: 800; color: var(--red); }
+    .stat-label { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* ---------- MAIN CONTENT ---------- */
+    .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+
+    section { margin-bottom: 56px; }
+    section h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    section h2 span { color: var(--red); }
+
+    /* ---------- ENDPOINT CARDS ---------- */
+    .endpoints { display: flex; flex-direction: column; gap: 10px; }
+    .endpoint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.15s;
+    }
+    .endpoint:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .method {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      min-width: 58px;
+      text-align: center;
+    }
+    .method-get { background: #e8f5e9; color: #2e7d32; }
+    .method-post { background: #fff8e1; color: #f57f17; }
+    .method-put { background: #e3f2fd; color: #1565c0; }
+    .method-delete { background: #fce4ec; color: #c62828; }
+    .endpoint-path {
+      font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+      font-size: 0.9rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    .endpoint-desc { margin-left: auto; font-size: 0.82rem; color: var(--text-muted); text-align: right; }
+    .badge-auth {
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: #f3e8ff;
+      color: #7c3aed;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* ---------- POKEMON GRID ---------- */
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 11px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-bar input:focus { border-color: var(--red); }
+    .search-bar button {
+      padding: 11px 22px;
+      background: var(--red);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+    .pokemon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .pokemon-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.15s, transform 0.15s;
+      cursor: pointer;
+    }
+    .pokemon-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,0.12); transform: translateY(-2px); }
+    .pokemon-card .poke-img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin: 0 auto 8px;
+      display: block;
+    }
+    .pokemon-card .poke-num { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+    .pokemon-card .poke-name { font-weight: 700; font-size: 0.95rem; text-transform: capitalize; margin: 2px 0; }
+    .pokemon-types { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-top: 6px; }
+    .type-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      text-transform: capitalize;
+    }
+
+    /* Type colors */
+    .type-fire{background:#ffe0d0;color:#bf3a00}
+    .type-water{background:#d0e8ff;color:#005fa3}
+    .type-grass{background:#d8f5d0;color:#2d6a1f}
+    .type-electric{background:#fff8c5;color:#8a6500}
+    .type-psychic{background:#ffe0f0;color:#a0005a}
+    .type-ice{background:#d8f2f8;color:#005a80}
+    .type-dragon{background:#e0d0ff;color:#5000c0}
+    .type-dark{background:#d8d0c0;color:#4a3800}
+    .type-fairy{background:#ffe0f5;color:#a0007a}
+    .type-normal{background:#e8e8e0;color:#4a4a40}
+    .type-fighting{background:#ffd8c8;color:#a03000}
+    .type-flying{background:#e0e8ff;color:#3040a0}
+    .type-poison{background:#e8d0f0;color:#6a1080}
+    .type-ground{background:#f0e8c0;color:#7a5000}
+    .type-rock{background:#e0d8b0;color:#6a5a00}
+    .type-bug{background:#e0f0c0;color:#4a6a00}
+    .type-ghost{background:#d8c8f0;color:#3a1880}
+    .type-steel{background:#d8e8e8;color:#3a6060}
+
+    /* ---------- PAGINATION ---------- */
+    .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 24px; }
+    .pagination button {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.15s;
+    }
+    .pagination button:hover, .pagination button.active { background: var(--red); color: #fff; border-color: var(--red); }
+    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ---------- LOADING / EMPTY ---------- */
+    .loading, .empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.95rem; }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- FOOTER ---------- */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    footer strong { color: var(--text); }
+
+    @media (max-width: 600px) {
+      .endpoint { flex-wrap: wrap; }
+      .endpoint-desc { margin-left: 0; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="#">Poké<span>API</span></a>
+    <div class="nav-links">
+      <a href="#endpoints">Endpoints</a>
+      <a href="#browse">Browse</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">RESTful API</div>
+  <h1>The <em>Pokémon</em> Trainer API</h1>
+  <p>Register as a trainer, catch Pokémon, nickname them, and manage your collection — all via a clean JSON API.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="#browse">Browse Pokémon</a>
+    <a class="btn btn-ghost" href="#endpoints">View Endpoints</a>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat">
+      <div class="stat-val" id="stat-total">—</div>
+      <div class="stat-label">Pokémon</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">9</div>
+      <div class="stat-label">Endpoints</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">JWT</div>
+      <div class="stat-label">Auth</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val">REST</div>
+      <div class="stat-label">Architecture</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- ENDPOINTS -->
+  <section id="endpoints">
+    <h2>API <span>Endpoints</span></h2>
+    <div class="endpoints">
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/</span>
+        <span class="endpoint-desc">API landing page</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/signup</span>
+        <span class="endpoint-desc">Create a new trainer account</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/login</span>
+        <span class="endpoint-desc">Log in and receive a JWT token</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/logout</span>
+        <span class="endpoint-desc">Invalidate session cookies</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/pokemon/</span>
+        <span class="endpoint-desc">List all Pokémon (paginated, searchable)</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/pokemon/&lt;id&gt;</span>
+        <span class="endpoint-desc">Get a single Pokémon by ID</span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-get">GET</span>
+        <span class="endpoint-path">/mypokemon/</span>
+        <span class="endpoint-desc">List your caught Pokémon <span class="badge-auth">JWT</span></span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-post">POST</span>
+        <span class="endpoint-path">/mypokemon/</span>
+        <span class="endpoint-desc">Catch a Pokémon <span class="badge-auth">JWT</span></span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-put">PUT</span>
+        <span class="endpoint-path">/mypokemon/</span>
+        <span class="endpoint-desc">Rename a caught Pokémon <span class="badge-auth">JWT</span></span>
+      </div>
+      <div class="endpoint">
+        <span class="method method-delete">DELETE</span>
+        <span class="endpoint-path">/mypokemon/</span>
+        <span class="endpoint-desc">Release a Pokémon <span class="badge-auth">JWT</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- BROWSE -->
+  <section id="browse">
+    <h2>Browse <span>Pokémon</span></h2>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search by name…" />
+      <button onclick="searchPokemon()">Search</button>
+    </div>
+    <div id="pokemon-grid" class="pokemon-grid">
+      <div class="loading"><div class="spinner"></div>Loading Pokémon…</div>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </section>
+
+</div>
+
+<!-- FOOTER -->
+<footer>
+  Built with <strong>Flask</strong> · <strong>SQLAlchemy</strong> · <strong>JWT</strong> &nbsp;|&nbsp; INFO 2602 Assignment
+</footer>
+
+<script>
+  const TYPE_COLORS = ['fire','water','grass','electric','psychic','ice','dragon','dark','fairy','normal','fighting','flying','poison','ground','rock','bug','ghost','steel'];
+
+  let currentPage = 1;
+  let totalPages = 1;
+  let currentQuery = '';
+
+  function typeClass(t) {
+    if (!t) return '';
+    const name = t.toLowerCase();
+    return TYPE_COLORS.includes(name) ? `type-${name}` : 'type-normal';
+  }
+
+  function spriteUrl(id) {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+  }
+
+  async function loadPokemon(page = 1, q = '') {
+    currentPage = page;
+    currentQuery = q;
+    const grid = document.getElementById('pokemon-grid');
+    grid.innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
+
+    try {
+      const params = new URLSearchParams({ page, per_page: 20 });
+      if (q) params.set('q', q);
+      const res = await fetch(`/pokemon/?${params}`);
+      if (!res.ok) throw new Error('Failed to load');
+      const data = await res.json();
+
+      document.getElementById('stat-total').textContent = data.total.toLocaleString();
+      totalPages = data.pages;
+
+      if (data.pokemon.length === 0) {
+        grid.innerHTML = '<div class="empty">No Pokémon found.</div>';
+        renderPagination();
+        return;
+      }
+
+      grid.innerHTML = data.pokemon.map(p => `
+        <div class="pokemon-card" title="HP: ${p.hp ?? '?'} | ATK: ${p.attack ?? '?'} | DEF: ${p.defense ?? '?'} | SPD: ${p.speed ?? '?'}">
+          <img class="poke-img" src="${spriteUrl(p.id)}" alt="${p.name}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22><text y=%2250%22 font-size=%2250%22>?</text></svg>'" />
+          <div class="poke-num">#${String(p.id).padStart(3,'0')}</div>
+          <div class="poke-name">${p.name}</div>
+          <div class="pokemon-types">
+            <span class="type-badge ${typeClass(p.type1)}">${p.type1 || ''}</span>
+            ${p.type2 ? `<span class="type-badge ${typeClass(p.type2)}">${p.type2}</span>` : ''}
+          </div>
+        </div>
+      `).join('');
+
+      renderPagination();
+    } catch (err) {
+      grid.innerHTML = '<div class="empty">Could not load Pokémon. Make sure the database is initialized with <code>flask init</code>.</div>';
+    }
+  }
+
+  function renderPagination() {
+    const el = document.getElementById('pagination');
+    if (totalPages <= 1) { el.innerHTML = ''; return; }
+    const pages = [];
+    pages.push(`<button onclick="loadPokemon(${currentPage - 1}, currentQuery)" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`);
+    for (let p = Math.max(1, currentPage - 2); p <= Math.min(totalPages, currentPage + 2); p++) {
+      pages.push(`<button class="${p === currentPage ? 'active' : ''}" onclick="loadPokemon(${p}, currentQuery)">${p}</button>`);
+    }
+    pages.push(`<button onclick="loadPokemon(${currentPage + 1}, currentQuery)" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`);
+    el.innerHTML = pages.join('');
+  }
+
+  function searchPokemon() {
+    const q = document.getElementById('search-input').value.trim();
+    loadPokemon(1, q);
+  }
+
+  document.getElementById('search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchPokemon();
+  });
+
+  loadPokemon();
+</script>
+</body>
+</html>
+
