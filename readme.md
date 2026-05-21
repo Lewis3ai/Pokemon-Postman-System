@@ -17,6 +17,15 @@ A fully functional REST API built with **Flask**, **SQLAlchemy**, and **JWT auth
 
 ---
 
+## PokeAPI Website Screenshots
+![Alt Text](PokeAPI-site-banner.png)
+![Alt Text](PokeAPI-site-endpoints.png)
+![Alt Text](PokeAPI-site-browsepokemon.png)
+![Alt Text](PokeAPI-site-searchpokemon.png)
+
+
+---
+
 ## Features
 
 - **User Registration & Login** with bcrypt-hashed passwords and JWT tokens
@@ -210,4 +219,3 @@ This runs the full Postman collection against `http://127.0.0.1:8080`. See `POST
 - **SQLite for development** — Zero-config, portable. Swap `SQLALCHEMY_DATABASE_URI` for PostgreSQL in production.
 - **CSV seeding** — All 800+ Pokémon are seeded in one `flask init` command, no external API calls needed.
 - **Paginated responses** — The Pokémon list is paginated to keep response sizes manageable.
-

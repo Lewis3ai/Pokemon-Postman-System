@@ -11,5 +11,13 @@ run = ["sh", "-c", "flask run -h 0.0.0.0 -p 8080 --reload"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
 localPort = 8080
 externalPort = 8080
+
+[agent]
+expertMode = true
+

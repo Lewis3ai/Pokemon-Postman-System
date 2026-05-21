@@ -1,2 +1,2 @@
-from .app import *
-from .models import *
+from .models import db, User, Pokemon, UserPokemon
+from .app import app
